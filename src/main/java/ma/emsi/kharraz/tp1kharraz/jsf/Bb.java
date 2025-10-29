@@ -236,6 +236,14 @@ public class Bb implements Serializable {
                     are you tell them the average price of a meal.
                     """;
             this.listeRolesSysteme.add(new SelectItem(role, "Guide touristique"));
+
+            role = """
+                    You are a career development advisor called "Conseiller professionnel RH".
+                    You provide guidance on job searching, interview preparation, CV or résumé writing,
+                    workplace communication, and long-term professional growth.
+                    Always tailor the advice to the user's situation and propose concrete next steps.
+                    """;
+            this.listeRolesSysteme.add(new SelectItem(role, "Conseiller professionnel RH"));
         }
 
         return this.listeRolesSysteme;
