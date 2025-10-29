@@ -1,4 +1,4 @@
-package ma.emsi.kharraz.tp0kharraz.jsf;
+package ma.emsi.kharraz.tp1kharraz.jsf;
 
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
@@ -6,6 +6,8 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import ma.emsi.kharraz.tp1kharraz.llm.JsonUtilPourGemini;
+import ma.emsi.kharraz.tp1kharraz.llm.LlmInteraction;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,10 +55,38 @@ public class Bb implements Serializable {
     private StringBuilder conversation = new StringBuilder();
 
     /**
+     * La requête JSON envoyée à l'API.
+     */
+    private String texteRequeteJson;
+
+    /**
+     * La réponse JSON reçue de l'API.
+     */
+    private String texteReponseJson;
+
+    private boolean debug = false;
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+    }
+    public void toggleDebug() {
+        this.setDebug(!isDebug());
+    }
+    /**
      * Contexte JSF. Utilisé pour qu'un message d'erreur s'affiche dans le formulaire.
      */
     @Inject
     private FacesContext facesContext;
+
+    /**
+     * Client pour envoyer des requêtes à l'API de Gemini et gérer les réponses JSON.
+     */
+    @Inject
+    private JsonUtilPourGemini jsonUtil;
 
     /**
      * Obligatoire pour un bean CDI (classe gérée par CDI), s'il y a un autre constructeur.
@@ -105,11 +135,24 @@ public class Bb implements Serializable {
         this.conversation = new StringBuilder(conversation);
     }
 
+    public String getTexteRequeteJson() {
+        return texteRequeteJson;
+    }
+
+    public void setTexteRequeteJson(String texteRequeteJson) {
+        this.texteRequeteJson = texteRequeteJson;
+    }
+
+    public String getTexteReponseJson() {
+        return texteReponseJson;
+    }
+
+    public void setTexteReponseJson(String texteReponseJson) {
+        this.texteReponseJson = texteReponseJson;
+    }
+
     /**
-     * Envoie la question au serveur.
-     * En attendant de l'envoyer à un LLM, le serveur fait un traitement quelconque, juste pour tester :
-     * Le traitement consiste à copier la question en minuscules et à l'entourer avec "||". Le rôle système
-     * est ajouté au début de la première réponse.
+     * Envoie la question au serveur via l'API du LLM (Gemini).
      *
      * @return null pour rester sur la même page.
      */
@@ -121,16 +164,27 @@ public class Bb implements Serializable {
             facesContext.addMessage(null, message);
             return null;
         }
-        // Entourer la réponse avec "||".
-        this.reponse = "||";
-        // Si la conversation n'a pas encore commencé, ajouter le rôle système au début de la réponse
+
+        // Si la conversation n'a pas encore commencé, définir le rôle système
         if (this.conversation.isEmpty()) {
-            // Ajouter le rôle système au début de la réponse
-            this.reponse += roleSysteme.toUpperCase(Locale.FRENCH) + "\n";
+            this.jsonUtil.setSystemRole(this.roleSysteme);
             // Invalide le bouton pour changer le rôle système
             this.roleSystemeChangeable = false;
         }
-        this.reponse += question.toLowerCase(Locale.FRENCH) + "||";
+
+        try {
+            LlmInteraction interaction = jsonUtil.envoyerRequete(question);
+            this.reponse = interaction.reponseExtraite();
+            this.texteRequeteJson = interaction.questionJson();
+            this.texteReponseJson = interaction.reponseJson();
+        } catch (Exception e) {
+            FacesMessage message = 
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                                 "Problème de connexion avec l'API du LLM", 
+                                 "Problème de connexion avec l'API du LLM" + e.getMessage());
+            facesContext.addMessage(null, message);
+        }
+
         // La conversation contient l'historique des questions-réponses depuis le début.
         afficherConversation();
         return null;

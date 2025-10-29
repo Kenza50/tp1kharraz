@@ -1,7 +1,8 @@
-package ma.emsi.kharraz.tp0kharraz.jsf;
+package ma.emsi.kharraz.tp1kharraz.jsf;
 
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
@@ -10,9 +11,9 @@ public class CharsetFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-//        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-//        httpServletResponse.setContentType("text/html; charset=UTF-8");
-//        httpServletResponse.setCharacterEncoding("UTF-8");
+ HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+ httpServletResponse.setContentType("text/html; charset=UTF-8");
+ httpServletResponse.setCharacterEncoding("UTF-8");
 
         request.setCharacterEncoding("UTF-8");
 
