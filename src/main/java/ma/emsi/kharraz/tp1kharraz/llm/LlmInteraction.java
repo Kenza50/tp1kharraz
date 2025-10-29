@@ -8,4 +8,4 @@ package ma.emsi.kharraz.tp1kharraz.llm;
  * @param reponseJson la réponse JSON reçue de l'API
  * @param reponseExtraite la réponse extraite en texte simple
  */
-public record Llminteraction(String questionJson, String reponseJson, String reponseExtraite) {}
+public record LlmInteraction(String questionJson, String reponseJson, String reponseExtraite) {}
